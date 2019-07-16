@@ -4,4 +4,19 @@ services:
 
 
 before_install:
-  - docker build -t abhinav/react-test -f ./client/Dockerfile.dev
+  - docker build -t abhi094/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true abhi094/react-test npm test -- --coverage
+
+
+after_success:
+  - docker build -t abhi094/multi-client ./client
+  - docker build -t abhi094/multi-nginx ./nginx
+  - docker build -t abhi094/multi-server ./server
+  - docker build -t abhi094/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push abhi094/multi-client
+  - docker push abhi094/multi-nginx
+  - docker push abhi094/multi-server
+  - docker push abhi094/multi-worker
